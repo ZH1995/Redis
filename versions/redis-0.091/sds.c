@@ -31,33 +31,42 @@
 #include "sds.h"
 #include <stdio.h>
 #include <stdlib.h>
+// 用于处理可变参数函数，提供一组宏来访问和管理这些参数
 #include <stdarg.h>
 #include <string.h>
+// 提供字符分类和转换的函数
 #include <ctype.h>
 #include "zmalloc.h"
 
+// static 关键字表示该函数的作用域仅限于定义它的文件，其他文件无法访问
 static void sdsOomAbort(void) {
+    // 使用 fprintf 函数将错误信息输出到标准错误流
     fprintf(stderr,"SDS: Out Of Memory (SDS_ABORT_ON_OOM defined)\n");
+    // abort 函数强制终止程序的执行,并返回一个非零值给操作系统
+    // 在stdlib.h中
     abort();
 }
 
+// 创建一个新的SDS字符串，可以指定初始长度和可选的初始内容
 sds sdsnewlen(const void *init, size_t initlen) {
     struct sdshdr *sh;
 
     sh = zmalloc(sizeof(struct sdshdr)+initlen+1);
+    // 处理内存分配失败的情况
+    // 在Makefile中通过-D编译选项定义了宏SDS_ABORT_ON_OOM，好处是通过Makefile灵活地控制是否启用这个特性
 #ifdef SDS_ABORT_ON_OOM
     if (sh == NULL) sdsOomAbort();
 #else
     if (sh == NULL) return NULL;
 #endif
     sh->len = initlen;
-    sh->free = 0;
+    sh->free = 0;  // 初始化为0，表示没有可用空间
     if (initlen) {
-        if (init) memcpy(sh->buf, init, initlen);
-        else memset(sh->buf,0,initlen);
+        if (init) memcpy(sh->buf, init, initlen); // 将内容从init复制到缓冲区（sh->buf）
+        else memset(sh->buf,0,initlen); // 如果init为空，将缓冲区初始化为0
     }
-    sh->buf[initlen] = '\0';
-    return (char*)sh->buf;
+    sh->buf[initlen] = '\0'; // 添加字符串结束符，使其成为一个有效的C字符串
+    return (char*)sh->buf; // 返回指向新创建字符串的指针
 }
 
 sds sdsempty(void) {

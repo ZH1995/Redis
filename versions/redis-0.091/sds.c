@@ -69,29 +69,36 @@ sds sdsnewlen(const void *init, size_t initlen) {
     return (char*)sh->buf; // 返回指向新创建字符串的指针
 }
 
+// 创建一个空的SDS字符串
 sds sdsempty(void) {
     return sdsnewlen("",0);
 }
 
+// 创建一个新的SDS字符串，可以指定初始内容
 sds sdsnew(const char *init) {
     size_t initlen = (init == NULL) ? 0 : strlen(init);
     return sdsnewlen(init, initlen);
 }
 
+// 返回SDS字符串的长度
 size_t sdslen(const sds s) {
+    // s是一个指向SDS字符串的指针，通过减去sizeof(struct sdshdr)来获取SDS字符串的头部信息
     struct sdshdr *sh = (void*) (s-(sizeof(struct sdshdr)));
     return sh->len;
 }
 
+// 复制SDS字符串
 sds sdsdup(const sds s) {
     return sdsnewlen(s, sdslen(s));
 }
 
+// 释放SDS字符串
 void sdsfree(sds s) {
     if (s == NULL) return;
     zfree(s-sizeof(struct sdshdr));
 }
 
+// 返回SDS字符串的可用空间
 size_t sdsavail(sds s) {
     struct sdshdr *sh = (void*) (s-(sizeof(struct sdshdr)));
     return sh->free;

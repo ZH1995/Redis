@@ -104,7 +104,9 @@ size_t sdsavail(sds s) {
     return sh->free;
 }
 
+// 更新SDS字符串的长度
 void sdsupdatelen(sds s) {
+    // 计算指向sdshdr结构的指针
     struct sdshdr *sh = (void*) (s-(sizeof(struct sdshdr)));
     int reallen = strlen(s);
     sh->free += (sh->len-reallen);

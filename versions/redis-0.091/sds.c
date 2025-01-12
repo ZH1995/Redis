@@ -113,18 +113,19 @@ void sdsupdatelen(sds s) {
     sh->len = reallen;
 }
 
+// 为SDS字符串增加空间
 static sds sdsMakeRoomFor(sds s, size_t addlen) {
     struct sdshdr *sh, *newsh;
-    size_t free = sdsavail(s);
+    size_t free = sdsavail(s); // 检查当前字符串是否有足够的空闲空间
     size_t len, newlen;
 
-    if (free >= addlen) return s;
-    len = sdslen(s);
-    sh = (void*) (s-(sizeof(struct sdshdr)));
-    newlen = (len+addlen)*2;
-    newsh = zrealloc(sh, sizeof(struct sdshdr)+newlen+1);
+    if (free >= addlen) return s; // 如果有足够的空闲空间，直接返回
+    len = sdslen(s); // 获取当前字符串的长度
+    sh = (void*) (s-(sizeof(struct sdshdr))); // 获取SDS字符串的头部结构体指针
+    newlen = (len+addlen)*2; // 计算新的字符串长度（两倍扩容，减少频繁的内存分配）
+    newsh = zrealloc(sh, sizeof(struct sdshdr)+newlen+1); // 重新分配内存
 #ifdef SDS_ABORT_ON_OOM
-    if (newsh == NULL) sdsOomAbort();
+    if (newsh == NULL) sdsOomAbort(); // 如果内存分配失败，触发错误处理
 #else
     if (newsh == NULL) return NULL;
 #endif
